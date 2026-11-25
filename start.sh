@@ -6,9 +6,13 @@ set -euo pipefail
 cd "$(dirname "$0")"
 source ./_load_env.sh
 
+# Keep only the storage lines that match .env (see _load_env.sh).
+if [ -n "${DATA_PVC:-}" ]; then DROP="# only-nfs"; else DROP="# only-pvc"; fi
+
 echo "Deploying '$APPNAME:$APPVERSION' to namespace '$NAMESPACE' ..."
-envsubst '$APPNAME $APPVERSION $REMOTE_REGISTRY $NAMESPACE $DATA_PVC $USER_UID $USER_GID $CPU $MEMORY $GPU' \
-  < statefulset.yaml | kubectl apply -f -
+grep -v -- "$DROP" statefulset.yaml \
+  | envsubst '$APPNAME $APPVERSION $REMOTE_REGISTRY $NAMESPACE $DATA_PVC $DATA_NFS_SERVER $DATA_NFS_PATH $DATA_SUBPATH $USER_UID $USER_GID $CPU $MEMORY $GPU' \
+  | kubectl apply -f -
 
 kubectl rollout restart "statefulset/$APPNAME" -n "$NAMESPACE"
 echo "Waiting for the pod to start (this can take a few minutes the first time) ..."

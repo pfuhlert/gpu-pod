@@ -69,14 +69,15 @@ spec:
               mountPath: /dev/shm
             - name: data               # your storage; only /data survives a restart
               mountPath: /data/
+              subPath: "${DATA_SUBPATH}"   # folder inside the storage; empty = all of it
       volumes:
         - name: dshm
           emptyDir:
             medium: Memory
+        # Storage from .env: start.sh keeps either the "only-pvc" or the "only-nfs" lines.
         - name: data
-          persistentVolumeClaim:
-            claimName: ${DATA_PVC}   # set in .env; ask your supervisor which one to use
-          # For an NFS share instead, replace the two persistentVolumeClaim lines with:
-          # nfs:
-          #   server: my-nfs-server
-          #   path: /export/path/
+          persistentVolumeClaim:             # only-pvc
+            claimName: ${DATA_PVC}           # only-pvc
+          nfs:                               # only-nfs
+            server: ${DATA_NFS_SERVER}       # only-nfs
+            path: ${DATA_NFS_PATH}           # only-nfs

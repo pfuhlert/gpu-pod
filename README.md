@@ -26,7 +26,8 @@ Everything else (`Dockerfile`, `statefulset.yaml`, the scripts) you can leave al
 cp .env.example .env
 ```
 
-Fill in `.env`. Ask your supervisor for `USER_UID`, `USER_GID`, `REMOTE_REGISTRY` and `DATA_PVC`.
+Fill in `.env`. Ask your supervisor for `USER_UID`, `USER_GID`, `REMOTE_REGISTRY` and the storage settings
+(`DATA_PVC`, or `DATA_NFS_SERVER` and `DATA_NFS_PATH`, plus `DATA_SUBPATH` for your own folder).
 Choose an `APPNAME` that nobody else uses, for example `anna-gpu`.
 
 ```bash
