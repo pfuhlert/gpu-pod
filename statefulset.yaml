@@ -1,0 +1,83 @@
+# Pod definition. Values in ${...} are filled in from .env by start.sh.
+# You normally do not need to edit this file.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ${APPNAME}
+  namespace: ${NAMESPACE}
+  labels:
+    app: ${APPNAME}
+spec:
+  replicas: 1
+  serviceName: ""
+  podManagementPolicy: OrderedReady
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  selector:
+    matchLabels:
+      app: ${APPNAME}
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: ${APPNAME}
+    spec:
+      hostname: ${APPNAME}-pod
+      nodeSelector:
+        env: imsb
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: gpu_memory
+                    operator: In
+                    values:
+                      - "40"
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: ${USER_UID}
+        runAsGroup: ${USER_GID}
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: ${APPNAME}
+          image: ${REMOTE_REGISTRY}/${APPNAME}:${APPVERSION}
+          imagePullPolicy: Always
+          command: ["sleep", "infinity"]
+          envFrom:
+            - configMapRef:
+                name: proxy-config   # cluster proxy settings (pip, git, wandb, ...)
+          resources:
+            requests:
+              cpu: "${CPU}"
+              memory: ${MEMORY}
+              nvidia.com/gpu: "${GPU}"
+            limits:
+              memory: ${MEMORY}
+              nvidia.com/gpu: "${GPU}"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: dshm               # shared memory for PyTorch DataLoader workers
+              mountPath: /dev/shm
+            - name: data               # your storage; only /data survives a restart
+              mountPath: /data/
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+        - name: data
+          persistentVolumeClaim:
+            claimName: ${DATA_PVC}   # set in .env; ask your supervisor which one to use
+          # For an NFS share instead, replace the two persistentVolumeClaim lines with:
+          # nfs:
+          #   server: my-nfs-server
+          #   path: /export/path/

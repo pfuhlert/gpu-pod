@@ -1,0 +1,8 @@
+# System packages (apt), one per line. Lines starting with # are ignored.
+build-essential
+libgl1
+nano
+htop
+tmux
+rsync
+unzip

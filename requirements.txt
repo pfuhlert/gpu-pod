@@ -1,0 +1,34 @@
+# Python packages (pip), one per line. Pin versions with == if you need to.
+# torch and torchvision already come with the base image (PyTorch 2.6, CUDA 12.4).
+
+# --------- deep learning --------- #
+lightning
+torchmetrics
+timm
+transformers
+
+# --------- data --------- #
+numpy
+pandas
+scikit-learn
+scikit-image
+opencv-python-headless
+h5py
+tifffile
+
+# --------- logging / config --------- #
+wandb
+hydra-core
+rich
+tqdm
+
+# --------- plotting / notebooks --------- #
+matplotlib
+seaborn
+ipykernel
+ipywidgets
+
+# --------- dev --------- #
+ruff
+pre-commit
+pytest
