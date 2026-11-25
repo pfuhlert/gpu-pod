@@ -24,7 +24,6 @@ spec:
       labels:
         app: ${APPNAME}
     spec:
-      hostname: ${APPNAME}-pod
       nodeSelector:
         env: imsb
       affinity:

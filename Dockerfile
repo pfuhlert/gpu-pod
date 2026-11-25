@@ -29,6 +29,9 @@ ENV PATH=/home/$USERNAME/.local/bin:$PATH
 
 # Oh My Zsh (nicer shell; remove these lines if you prefer bash).
 RUN sh -c "$(wget -qO- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+# Prompt: user@pod-name:folder (see prompt.zsh).
+COPY --chown=$USERNAME prompt.zsh /home/$USERNAME/.zsh_prompt
+RUN echo 'source ~/.zsh_prompt' >> ~/.zshrc
 
 # Git identity (from .env).
 ARG GIT_NAME
