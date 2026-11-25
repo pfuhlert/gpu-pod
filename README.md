@@ -89,3 +89,25 @@ Kubernetes → your cluster → Workloads → Pods, right-click → *Attach Visu
   - Put the env on a block-storage PVC, not an NFS share: conda's many small files are slow on NFS.
   - The env folder must belong to `USER_UID`. Only one pod should use an env at a time.
   - Update the README: "add the package to `environment.yml`, run `./setup_env.sh`".
+
+## Sanity check
+
+After `./start.sh`, open a shell with `./shell.sh` and run these two checks inside the pod.
+
+1. The GPU works:
+
+   ```bash
+   python -c "import torch; print('CUDA available:', torch.cuda.is_available()); print('GPUs:', torch.cuda.device_count()); print('Name:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else '-'); print('Torch', torch.__version__, '| CUDA', torch.version.cuda); x = torch.randn(1000, 1000, device='cuda'); print('Matmul on GPU OK:', (x @ x).shape)"
+   ```
+
+   Expected: `CUDA available: True`, `GPUs: 1`, a GPU name and `Matmul on GPU OK: torch.Size([1000, 1000])`.
+   If `CUDA available` is `False`, run `nvidia-smi` and ask your supervisor.
+
+2. You can write to your storage:
+
+   ```bash
+   touch /data/test && rm /data/test && echo "/data is writable"
+   ```
+
+   Expected: `/data is writable`. If you get `Permission denied`, `USER_UID`/`USER_GID` in `.env`
+   do not match the owner of the storage volume. Ask your supervisor.
